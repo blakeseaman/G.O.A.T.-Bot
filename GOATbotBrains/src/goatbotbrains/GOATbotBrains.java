@@ -10,6 +10,8 @@ package goatbotbrains;
  * @author blake
  */
 public class GOATbotBrains {
+    
+    static RXTXRobot r = new ArduinoUno();
 
     /**
      * @param args the command line arguments
