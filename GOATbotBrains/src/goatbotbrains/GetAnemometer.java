@@ -1,5 +1,5 @@
 package goatbotbrains;
-
+//testing addition
 import rxtxrobot.*; 
 
 public class GetAnemometer {
