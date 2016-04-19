@@ -1,87 +1,121 @@
 package robotcode;
 import rxtxrobot.*; 
-import java.util.Scanner;
 
 public class GOATbotBrains {
     
+    
     //--------------MOTOR CALIBRATION STUFF--------------//
-    static int FWDmotor1power = 175;
-    static int FWDmotor2power = 200;
+    static int FWDmotor1power = 350;
+    static int FWDmotor2power = 350;
     static int FWDmotor1ticks = 28;
     static int FWDmotor2ticks = 28;
-    static int ROTmotor1power = 175;
-    static int ROTmotor2power = 200;
-    static int ROTmotor1ticks = 18;
-    static int ROTmotor2ticks = 18;
+    static int ROTmotor1power = 150;
+    static int ROTmotor2power = 150;
+    static int ROTmotor1ticks = 90;
+    static int ROTmotor2ticks = 90;
     //--------Enter Values as Is without negative--------//
     
-   static RXTXRobot r = new ArduinoUno(); 
+    static char n;
+    static char s; 
+    static char e;
+    static char w;
+    static char heading = n; //Specify this heading at the beginning of round
+    
+    static RXTXRobot r = new ArduinoUno(); 
    
     public static void main(String[] args) {
         
-       r.setPort("COM3"); 
-       r.connect();
-       
-       
-       //testConductivity();
-       // MoveServo();
-       //GetPing();
-       //GetTemperature();
-       //GetAnemometer();
-       //TemperatureArm();
-       moveForward(5);
-       
- 
+        r.setPort("COM3"); 
+        r.connect();
+        r.attachServo(RXTXRobot.SERVO3, 10);
+        r.attachServo(RXTXRobot.SERVO1, 11);
+
+        getWeatherData();
+        
        r.close();
        
     }
-
-    public static void MoveServo(){
-                
-        r.setVerbose(true); 
-        r.attachServo(RXTXRobot.SERVO1, 10); //Connect the servos to the Arduino
-        r.moveServo(RXTXRobot.SERVO1, 90); // Move Servo 1 to location 30 
-        for (int i = 0; i < 20; i++) {
-            System.out.println("MEMES");
-            r.moveServo(RXTXRobot.SERVO1, 90);
+    //----Task Methods----//
+    public static void performRamp(){
+        moveForward(9);
+        performWeatherBoom();
+        moveForward(9);
+    }
+    public static void performSandbox(){
+        r.refreshAnalogPins();   
+        AnalogPin temp = r.getAnalogPin(1);
+        while (temp.getValue() > 100){
+            r.runMotor(RXTXRobot.MOTOR1, 370, RXTXRobot.MOTOR2, -400, 0); 
+            r.refreshAnalogPins();
+            temp = r.getAnalogPin(3);
+            System.out.println("Bump Sensor Value" + temp.getValue());          
         }
-        r.sleep(8000);
-
-    }
-    public static void GetPing(){
-
-		System.out.println("Response: " + r.getPing(12) + " cm"); 
-		r.sleep(300); 
-    }
-    //---Weather Methods--//
-    public static void weatherRoutine(){
-        
-    }
-    public static void TemperatureArm(){
+                r.refreshAnalogPins();
+                r.runMotor(RXTXRobot.MOTOR1,0,RXTXRobot.MOTOR2,0,0); 
+               
        
-        r.setVerbose(true); 
-        r.attachServo(RXTXRobot.SERVO1, 10); //Connect the servos to the Arduino
+                    System.out.println("Bump Sensor Value" + temp.getValue());          
+                
+    }
+    public static void performObstacleAvoidance(){
+        r.refreshAnalogPins();
+        AnalogPin temp = r.getAnalogPin(1);
+        boolean notThereYet = true;
+            while (notThereYet){
+                moveForward(2);
+                    if(r.getPing(7) < 30){
+                        turnNinetyClockwise();
+                        moveForward(5);
+                        turnNinetyCounterclockwise();
+                        moveForward(7);
+                        turnNinetyCounterclockwise();
+                        moveForward(5);
+                        turnNinetyClockwise();
+                        moveForward(5);
+                            notThereYet = false;
+                            }
+
+            }
+                r.refreshAnalogPins();
+                moveForward(2);
+                         
+                
+    }
+    //---Sensor Methods--//
+    public static void performWeatherBoom(){
         r.moveServo(RXTXRobot.SERVO1, 90); // Move Servo 1 to location 30 
-        for (int i = 0; i < 20; i++) {
-            System.out.println("MEMES");
-            r.moveServo(RXTXRobot.SERVO1, 90);
+        for (int i = 0; i < 5; i++) {
+            r.moveServo(RXTXRobot.SERVO1, 180);
+            getAnemometer();
+            getWeatherData();
         }
-        r.sleep(8000);
-
+        r.sleep(2000);
     }
-    public static void GetTemperature(){
-
-		int thermistorReading = getThermistorReading(0);
-		System.out.println("The probe read the value: " + thermistorReading);
-		System.out.println("In volts " + (thermistorReading * (5.0/1023.0)));
-                int temp = 0;
-		temp = (int) ((thermistorReading - 816.517881)/-11.66755);
-		System.out.println("The temperature is: " + temp);
-
+    public static void getWeatherData(){ //this also prints anemomeneter, need to move anemometer to its own method. ADD 1 to 
+                double temperatureDifference;
+                //THERMOMETER IN A0
+		double thermistorReading2 = getThermistorReading(2);
+                double thermistorReading = getThermistorReading(0);//TEMP
+		//System.out.println("The probe 2 reads the value: " + thermistorReading);
+                //System.out.println("The probe 0 reads the value: " + thermistorReading2); //TEMP
+		//System.out.println("In volts " + (thermistorReading * (5.0/1023.0)));
+                double temp;
+                double temp2;
+                int sum = 0;
+                int sum2 = 0;
+                for (int i = 0; i < 5; i++){                    
+                    temp = (double) ((thermistorReading - 764.874)/-8.2968);
+                    temp2 = (double) ((thermistorReading2 - 749.488)/-7.629);
+                    sum += temp;
+                    sum2 += temp2;        
+                }
+		System.out.println("The temperature is (2): " + (sum2 / 5));
+                temperatureDifference = (sum2/5) - (sum/5);
+                System.out.println("The difference :" + temperatureDifference + 1); //corrective 1 
     }
-    public static void GetAnemometer(){
+    public static void getAnemometer(){
 
-		int thermistorReading = getThermistorReading(3); //gets reading from first thermister
+		int thermistorReading = getThermistorReading(2); //gets reading from first thermister
                 int thermistorReading2 = getThermistorReading(0); //gets a reading from the second thermistor
                 int anemometerReading = thermistorReading - thermistorReading2; //takes the difference of thermister values
                 System.out.println("Aemometer Reading: " + anemometerReading); //prints the difference and calls it the anemometer reading
@@ -90,40 +124,29 @@ public class GOATbotBrains {
     public static int getThermistorReading(int pin){
            
 		int sum = 0;
-		int readingCount = 10;
 		//Read the analog pint values ten times, adding the sum of each time
-		for(int i = 0; i < readingCount; i ++){
+		for(int i = 0; i < 10; i ++){
 			//Refresh the analog pins so we get new readings
 			r.refreshAnalogPins();
-			int reading = r.getAnalogPin(0).getValue();
+			int reading = r.getAnalogPin(pin).getValue();
 			sum += reading;
 		}
 		//Return the average reading
-		return sum/ readingCount;
+		return sum/ 10;
     }
-    public static double getConductivity(){
-        r.refreshAnalogPins();
-        double conductivityReading1 = r.getAnalogPin(5).getValue(); //gets ADC code from one panel
-        double conductivityReading2 = r.getAnalogPin(4).getValue(); //gets ADC code from another panel
-        double conductivityDifference = conductivityReading1 - conductivityReading2; //takes difference of ADC readings
-        double resistance = (2000*conductivityDifference)/(conductivityDifference-1); //uses equation to calculate resistance
-        double conductivityReading = .016/resistance*0.001075; //uses calibrated code
-        return conductivityReading;
+    public static int getConductivityReading(){
+            int sum = 0;                  
+            for (int i = 0; i < 10; i++) {
+                r.moveServo(RXTXRobot.SERVO3, 175);
+                int reading = r.getConductivity();
+                sum += reading;
+            }
+        return sum / 10;
     }
-    public static void testConductivity(){
-        double conductivityReading1 = r.getAnalogPin(3).getValue();
-        double conductivityReading2 = r.getAnalogPin(1).getValue();
-        System.out.println(conductivityReading1);
-        System.out.println(conductivityReading2);
-        double ConductivityOutput = getConductivity();
-        System.out.println(ConductivityOutput);
-    }
-    //--------------------//
     //---MOTION METHODS---//
     public static void moveForward(int blocksToMove){
         
-        r.attachMotor(RXTXRobot.MOTOR1, 5);
-        r.attachMotor(RXTXRobot.MOTOR2, 6);
+
             for(int i = 0 ; i < blocksToMove ; i++){ //loop will run blocksToMove times
                 // Run both motors forward a block
                 r.runEncodedMotor(RXTXRobot.MOTOR1, FWDmotor1power, FWDmotor1ticks, RXTXRobot.MOTOR2, -FWDmotor2power, FWDmotor2ticks);
@@ -139,5 +162,94 @@ public class GOATbotBrains {
         r.runEncodedMotor(RXTXRobot.MOTOR1, -ROTmotor1power, ROTmotor1ticks, RXTXRobot.MOTOR2, -ROTmotor2power, ROTmotor2ticks); 
 
     }
-    //--------------------//
+    public static void moveUp(int blocksToMove){
+      if(heading == n){
+          moveForward(blocksToMove);
+      }
+      else if (heading == e){
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == s){
+          turnNinetyCounterclockwise();
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == w){
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else{
+          System.out.println("Error: Something to do with variable char heading");
+      }
+      heading = n;
+    }
+    public static void moveRight(int blocksToMove){
+      if(heading == n){
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == e){
+          moveForward(blocksToMove);
+      }
+      else if (heading == s){
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == w){
+          turnNinetyClockwise();
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else{
+          System.out.println("Error: Something to do with variable char heading");
+      }
+      heading = e;
+    }
+    public static void moveDown(int blocksToMove){
+      if(heading == n){
+          turnNinetyClockwise();
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == e){    
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == s){
+          moveForward(blocksToMove);
+      }
+      else if (heading == w){
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else{
+          System.out.println("Error: Something to do with variable char heading");
+      }
+      heading = s;
+    }
+    public static void moveLeft(int blocksToMove){
+      if(heading == n){
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == e){
+          turnNinetyCounterclockwise();
+          turnNinetyCounterclockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == s){
+          turnNinetyClockwise();
+          moveForward(blocksToMove);
+      }
+      else if (heading == w){
+          moveForward(blocksToMove);
+      }
+      else{
+          System.out.println("Error: Something to do with variable char heading");
+      }
+      heading = w;
+      System.out.println(heading);
+    }
+ 
 }
