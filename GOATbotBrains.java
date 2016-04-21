@@ -9,8 +9,8 @@ public class GOATbotBrains {
     static int FWDmotor2power = 350;
     static int FWDmotor1ticks = 28;
     static int FWDmotor2ticks = 28;
-    static int ROTmotor1power = 150;
-    static int ROTmotor2power = 150;
+    static int ROTmotor1power = 250;
+    static int ROTmotor2power = 250;
     static int ROTmotor1ticks = 90;
     static int ROTmotor2ticks = 90;
     //--------Enter Values as Is without negative--------//
@@ -28,9 +28,15 @@ public class GOATbotBrains {
         r.setPort("COM3"); 
         r.connect();
         r.attachServo(RXTXRobot.SERVO3, 10);
-        r.attachServo(RXTXRobot.SERVO1, 11);
-
-        getWeatherData();
+        
+        getConductivityReading();
+        //r.attachServo(RXTXRobot.SERVO1, 11);
+            
+        //r.moveServo(RXTXRobot.SERVO3, 170);
+        //System.out.println(r.getConductivity());
+        /*for(int count = 0; count < 20; count++){
+        r.moveServo(RXTXRobot.SERVO3, 170);
+        }*/
         
        r.close();
        
@@ -59,7 +65,7 @@ public class GOATbotBrains {
     }
     public static void performObstacleAvoidance(){
         r.refreshAnalogPins();
-        AnalogPin temp = r.getAnalogPin(1);
+        //AnalogPin temp = r.getAnalogPin(1);
         boolean notThereYet = true;
             while (notThereYet){
                 moveForward(2);
@@ -125,7 +131,7 @@ public class GOATbotBrains {
            
 		int sum = 0;
 		//Read the analog pint values ten times, adding the sum of each time
-		for(int i = 0; i < 10; i ++){
+		for(int i = 0; i < 5; i ++){
 			//Refresh the analog pins so we get new readings
 			r.refreshAnalogPins();
 			int reading = r.getAnalogPin(pin).getValue();
@@ -134,14 +140,15 @@ public class GOATbotBrains {
 		//Return the average reading
 		return sum/ 10;
     }
-    public static int getConductivityReading(){
-            int sum = 0;                  
-            for (int i = 0; i < 10; i++) {
-                r.moveServo(RXTXRobot.SERVO3, 175);
-                int reading = r.getConductivity();
-                sum += reading;
-            }
-        return sum / 10;
+    public static void getConductivityReading(){
+        //double waterReading;
+        //for(int i = 0; i < 5; i++){
+            r.moveServo(RXTXRobot.SERVO3, 170);
+            //double ADC = r.getConductivity();
+            //waterReading = ((-0.0227962)*(ADC))+(24.3498);
+            //System.out.println(waterReading);
+        //} 
+
     }
     //---MOTION METHODS---//
     public static void moveForward(int blocksToMove){
@@ -251,5 +258,121 @@ public class GOATbotBrains {
       heading = w;
       System.out.println(heading);
     }
- 
+    //---Scanning Methods---//RUN THESE WHEN IN QUAD STARTING POSITION, THEY HAVE TASKS EMBEDDED
+    public static void scanForRamp(){
+        //starting at bottom right corner of scanning field
+        scanSomeBlocksForRamp(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyClockwise();
+        //start scanning second row
+        scanSomeBlocksForRamp(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyCounterclockwise();
+        //start scanning third row
+        scanSomeBlocksForRamp(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyClockwise();
+        //start scanning fourth row
+        scanSomeBlocksForRamp(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyCounterclockwise();   
+        //start scanning fifth row
+        scanSomeBlocksForRamp(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyClockwise();
+        //start scanning sixth or last row
+        scanSomeBlocksForRamp(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForRamp(1);
+        turnNinetyCounterclockwise();
+        
+        
+    }
+    public static void scanForSandbox(){
+        //starting at bottom right corner of scanning field
+        scanSomeBlocksForSandbox(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyClockwise();
+        //start scanning second row
+        scanSomeBlocksForSandbox(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyCounterclockwise();
+        //start scanning third row
+        scanSomeBlocksForSandbox(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyClockwise();
+        //start scanning fourth row
+        scanSomeBlocksForSandbox(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyCounterclockwise();   
+        //start scanning fifth row
+        scanSomeBlocksForSandbox(3);
+        turnNinetyClockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyClockwise();
+        //start scanning sixth or last row
+        scanSomeBlocksForSandbox(3);
+        turnNinetyCounterclockwise();
+        scanSomeBlocksForSandbox(1);
+        turnNinetyCounterclockwise();
+        
+        
+    }
+    public static void scanSomeBlocksForRamp(int blocksToScan){
+        
+        for(int i = 0; i < blocksToScan; i++){
+            boolean temp = moveAndScanForward();
+                if(temp == true){
+                    performRamp();
+                }
+                else{
+                    System.out.println("Block One Scanned");
+                }
+        }
+    }
+    public static void scanSomeBlocksForSandbox(int blocksToScan){
+        
+        for(int i = 0; i < blocksToScan; i++){
+            boolean temp = moveAndScanForward();
+                if(temp == true){
+                    performSandbox();
+                }
+                else{
+                    System.out.println("Block One Scanned");
+                }
+        }
+
+    }
+    public static boolean moveAndScanForward(){
+        //where that boolean is an answer to Did you see something?
+        if(r.getPing(7) >= 80){
+            //80CM is around 219 ticks, so lets move forward 105 ticks twice
+            r.runEncodedMotor(RXTXRobot.MOTOR1, FWDmotor1power, 105, RXTXRobot.MOTOR2, FWDmotor2power, 105);
+            r.sleep(1000);
+            r.runEncodedMotor(RXTXRobot.MOTOR1, FWDmotor1power, 105, RXTXRobot.MOTOR2, FWDmotor2power, 105);
+            return false;  
+        }
+        else{
+            r.sleep(5000);
+            if(r.getPing(7) <= 80){
+                return true;
+            }
+            else{
+                r.runEncodedMotor(RXTXRobot.MOTOR1, FWDmotor1power, 105, RXTXRobot.MOTOR2, FWDmotor2power, 105);
+                r.sleep(1000);
+                r.runEncodedMotor(RXTXRobot.MOTOR1, FWDmotor1power, 105, RXTXRobot.MOTOR2, FWDmotor2power, 105);
+                return false;
+            }
+        }
+    }
+    
 }
