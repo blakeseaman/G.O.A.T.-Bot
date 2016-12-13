@@ -1,3 +1,3 @@
 # G.O.A.T.-Bot
 Repository for G.O.A.T. Bot Needs
-This is the goatbot Repository, where we can stick all of the code that we need to finish our robot. 
+This was the repository for the very basic Java that ran an arduino based robot for SMU KNW2300.
